@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đơn Đặt Hàng</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --g:#1a6b3c;--g2:#2d9d5e;--gp:#e8f5ec;
+    --red:#dc2626;--amb:#f59e0b;
+    --border:#c8e6d0;--muted:#6b7280;
+    --bg:#f0faf3;
+  }
+  body{
+    font-family:'Be Vietnam Pro',sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+    max-width:600px;
+    margin:0 auto;
+  }
+
+  /* HEADER */
+  .header{
+    background:linear-gradient(135deg,#0f3320,#1a6b3c);
+    color:#fff;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:100;
+    box-shadow:0 2px 12px rgba(0,0,0,.2);
+  }
+  .header h1{font-size:17px;font-weight:800;letter-spacing:-.3px;}
+  .header-sub{font-size:11px;opacity:.65;margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:8px;}
+  #clock{
+    background:rgba(255,255,255,.2);
+    padding:4px 11px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.5px;
+    font-variant-numeric:tabular-nums;
+  }
+  #conn-status{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+  .conn-ok{background:#4ade80;color:#14532d;}
+  .conn-err{background:#f87171;color:#7f1d1d;}
+  .conn-wait{background:#fde68a;color:#92400e;}
+
+  /* INPUT AREA */
+  .input-area{
+    background:#fff;
+    border-bottom:2px solid var(--border);
+    padding:12px 16px;
+  }
+  .input-row{display:flex;gap:8px;align-items:flex-end;}
+  #tin-nhan{
+    flex:1;
+    padding:10px 14px;
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    font-size:14px;
+    font-family:inherit;
+    resize:none;
+    outline:none;
+    transition:border .2s;
+    line-height:1.5;
+  }
+  #tin-nhan:focus{border-color:var(--g);}
+  .btn-gui{
+    background:var(--g);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:11px 18px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .15s;
+    white-space:nowrap;
+    font-family:inherit;
+    flex-shrink:0;
+  }
+  .btn-gui:hover{background:#155e34;}
+  .btn-gui:active{transform:scale(.96);}
+  .btn-gui:disabled{background:#9ca3af;cursor:not-allowed;}
+  .input-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;}
+
+  /* STATS */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    padding:12px 16px;
+    background:#f9fafb;
+    border-bottom:1px solid var(--border);
+  }
+  .stat{
+    background:#fff;
+    border-radius:12px;
+    padding:10px 8px;
+    text-align:center;
+    border:1.5px solid var(--border);
+  }
+  .stat-val{font-size:26px;font-weight:900;color:var(--g);line-height:1;}
+  .stat-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+
+  /* CONTROLS */
+  .controls{
+    padding:10px 16px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    background:#fff;
+    border-bottom:1.5px solid var(--border);
+  }
+  .btn-ctrl{
+    background:#fff;
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    padding:7px 13px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    color:#1a1a1a;
+    font-family:inherit;
+    transition:all .15s;
+  }
+  .btn-ctrl:hover{border-color:var(--g);color:var(--g);}
+  .btn-ctrl.active{background:var(--g);color:#fff;border-color:var(--g);}
+  .btn-ctrl.danger{border-color:#fecaca;color:var(--red);}
+  .btn-ctrl.danger:hover{background:#fee2e2;}
+
+  /* FILTER */
+  .filter-bar{
+    padding:8px 16px;
+    display:flex;
+    gap:6px;
+    background:#f9fafb;
+    border-bottom:1px solid var(--border);
+  }
+  .btn-filter{
+    background:#fff;
+    border:1.5px solid var(--border);
+    border-radius:20px;
+    padding:5px 12px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--muted);
+    font-family:inherit;
+    transition:all .15s;
+  }
+  .btn-filter.active{background:var(--g);color:#fff;border-color:var(--g);}
+
+  /* SEARCH */
+  .search-bar{padding:10px 16px;background:#f9fafb;border-bottom:1px solid var(--border);}
+  #search-inp{
+    width:100%;
+    padding:9px 14px;
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    font-size:13px;
+    font-family:inherit;
+    outline:none;
+    background:#fff;
+    transition:border .2s;
+  }
+  #search-inp:focus{border-color:var(--g);}
+
+  /* LIST */
+  .section{padding:12px 16px 80px;}
+  .section-title{
+    font-size:13px;
+    font-weight:800;
+    color:var(--g);
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .don-item{
+    background:#fff;
+    border-radius:12px;
+    border:1.5px solid var(--border);
+    padding:13px 14px;
+    margin-bottom:8px;
+    position:relative;
+    transition:all .2s;
+    animation:slideIn .25s ease;
+  }
+  @keyframes slideIn{
+    from{opacity:0;transform:translateY(-8px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .don-item.done{opacity:.55;border-color:#e5e7eb;}
+  .don-item.done .don-content{text-decoration:line-through;color:var(--muted);}
+  .don-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .don-num{font-size:11px;background:var(--g);color:#fff;padding:2px 8px;border-radius:20px;font-weight:700;}
+  .don-time{font-size:11px;color:var(--muted);font-weight:600;}
+  .don-content{font-size:14px;font-weight:600;line-height:1.5;margin-bottom:8px;word-break:break-word;}
+  .don-footer{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .btn-done{
+    background:none;
+    border:1.5px solid var(--g);
+    color:var(--g);
+    border-radius:8px;
+    padding:5px 11px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+    transition:all .15s;
+  }
+  .btn-done:hover{background:var(--g);color:#fff;}
+  .btn-undo{
+    background:none;
+    border:1.5px solid #d1d5db;
+    color:var(--muted);
+    border-radius:8px;
+    padding:5px 11px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-del{
+    background:none;
+    border:1.5px solid #fecaca;
+    color:#ef4444;
+    border-radius:8px;
+    padding:5px 9px;
+    font-size:12px;
+    cursor:pointer;
+    margin-left:auto;
+    font-family:inherit;
+    transition:all .15s;
+  }
+  .btn-del:hover{background:#fee2e2;}
+  .badge-done{background:#dcfce7;color:#15803d;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;}
+  .badge-wait{background:#fef3c7;color:#b45309;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);}
+  .empty-icon{font-size:44px;margin-bottom:10px;}
+  .don-date-label{
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    margin:10px 0 6px;
+  }
+
+  /* POPUP */
+  #popup{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%) translateY(100px);
+    background:#0f3320;
+    color:#fff;
+    padding:14px 18px;
+    border-radius:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.3);
+    max-width:320px;
+    width:calc(100% - 40px);
+    z-index:999;
+    transition:transform .3s cubic-bezier(.34,1.5,.64,1),opacity .3s;
+    opacity:0;
+  }
+  #popup.show{transform:translateX(-50%) translateY(0);opacity:1;}
+  #popup-title{font-size:10px;font-weight:700;opacity:.7;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;}
+  #popup-msg{font-size:14px;font-weight:700;line-height:1.4;}
+  #popup-bar{height:3px;background:rgba(255,255,255,.25);border-radius:2px;margin-top:10px;overflow:hidden;}
+  #popup-fill{height:100%;background:#4ade80;border-radius:2px;width:100%;transition:width 3.5s linear;}
+
+  /* TOAST */
+  #toast{
+    position:fixed;
+    top:70px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#1f2937;
+    color:#fff;
+    padding:9px 18px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    z-index:1000;
+    opacity:0;
+    transition:opacity .3s;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  #toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>📦 Đơn Đặt Hàng</h1>
+    <div class="header-sub" id="today-label"></div>
+  </div>
+  <div class="header-right">
+    <div id="clock">00:00:00</div>
+    <div id="conn-status" class="conn-wait">⏳ Đang kết nối...</div>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="input-area">
+  <div class="input-row">
+    <textarea id="tin-nhan" rows="2" placeholder="Nhập nội dung tin khách... VD: Cô Thành lấy 7 bao, giao lúc 9h"></textarea>
+    <button class="btn-gui" id="btn-send" onclick="guiDon()">📤 Gửi</button>
+  </div>
+  <div class="input-hint">💡 Nhập tin từ Zalo/SMS → bấm Gửi → máy tính nhà nhận ngay & đọc loa tự động</div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-val" id="st-tong">0</div>
+    <div class="stat-lbl">Tổng đơn</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="st-cho" style="color:#d97706;">0</div>
+    <div class="stat-lbl">Chờ giao</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="st-xong" style="color:#16a34a;">0</div>
+    <div class="stat-lbl">Đã giao</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="btn-ctrl active" id="btn-sound" onclick="toggleSound()">🔊 Tiếng: BẬT</button>
+  <button class="btn-ctrl" onclick="testSound()">🔔 Test loa</button>
+  <button class="btn-ctrl" onclick="toggleSearch()">🔍 Tìm kiếm</button>
+  <button class="btn-ctrl danger" onclick="xoaHet()">🗑 Xóa hết hôm nay</button>
+</div>
+
+<!-- SEARCH (ẩn mặc định) -->
+<div class="search-bar" id="search-bar" style="display:none;">
+  <input type="text" id="search-inp" placeholder="Tìm theo tên khách hoặc nội dung..." oninput="applyFilter()">
+</div>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  <button class="btn-filter active" onclick="setFilter('all',this)">Tất cả</button>
+  <button class="btn-filter" onclick="setFilter('wait',this)">⏳ Chờ giao</button>
+  <button class="btn-filter" onclick="setFilter('done',this)">✅ Đã giao</button>
+</div>
+
+<!-- LIST -->
+<div class="section">
+  <div class="section-title">
+    <span>📋 Danh sách hôm nay</span>
+    <span id="count-label" style="font-size:11px;font-weight:600;color:var(--muted);"></span>
+  </div>
+  <div id="don-list">
+    <div class="empty"><div class="empty-icon">📭</div><div>Chưa có đơn nào hôm nay</div></div>
+  </div>
+</div>
+
+<!-- POPUP thông báo -->
+<div id="popup">
+  <div id="popup-title">🔔 Đơn mới!</div>
+  <div id="popup-msg"></div>
+  <div id="popup-bar"><div id="popup-fill"></div></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+// ============================================================
+//  FIREBASE CONFIG — thay bằng config của bạn nếu cần
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCMyKERVbVXRegZ54FFuaLryGasTuJArkK",
+  authDomain: "ban-hang-thong-bao.firebaseapp.com",
+  databaseURL: "https://ban-hang-thong-bao-default-rtdb.firebaseio.com",
+  projectId: "ban-hang-thong-bao"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ============================================================
+//  STATE
+// ============================================================
+var soundOn = true;
+var filterMode = 'all';   // 'all' | 'wait' | 'done'
+var searchText = '';
+var prevKeys = {};
+var popTimer = null;
+var toastTimer = null;
+
+// Ngày hôm nay dạng YYYYMMDD
+var today = new Date().toISOString().split('T')[0];
+var todayKey = today.replace(/-/g,'');
+var donRef = db.ref('donhang/' + todayKey);
+
+// ============================================================
+//  CLOCK & NGÀY
+// ============================================================
+function tick(){
+  var n = new Date();
+  document.getElementById('clock').textContent =
+    pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+tick();
+setInterval(tick, 1000);
+
+document.getElementById('today-label').textContent =
+  new Date().toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+// ============================================================
+//  KẾT NỐI FIREBASE
+// ============================================================
+db.ref('.info/connected').on('value', function(snap){
+  var el = document.getElementById('conn-status');
+  if(snap.val()){
+    el.textContent = '✅ Đã kết nối';
+    el.className = 'conn-ok';
+  } else {
+    el.textContent = '❌ Mất kết nối';
+    el.className = 'conn-err';
+  }
+});
+
+// ============================================================
+//  NGHE ĐƠN REALTIME
+// ============================================================
+donRef.on('value', function(snap){
+  var data = snap.val() || {};
+  renderDonList(data);
+});
+
+// ============================================================
+//  GỬI ĐƠN
+// ============================================================
+function guiDon(){
+  var txt = document.getElementById('tin-nhan').value.trim();
+  if(!txt){ showToast('⚠️ Vui lòng nhập nội dung!'); return; }
+
+  var btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.textContent = '⏳...';
+
+  var n = new Date();
+  var timeStr = pad(n.getHours())+':'+pad(n.getMinutes());
+  var key = Date.now();
+
+  donRef.child(String(key)).set({
+    msg: txt,
+    time: timeStr,
+    done: false,
+    ts: key
+  }).then(function(){
+    document.getElementById('tin-nhan').value = '';
+    btn.disabled = false;
+    btn.textContent = '📤 Gửi';
+    showToast('✅ Đã gửi đơn!');
+  }).catch(function(err){
+    btn.disabled = false;
+    btn.textContent = '📤 Gửi';
+    showToast('❌ Lỗi: ' + err.message);
+  });
+}
+
+// Enter = gửi, Shift+Enter = xuống dòng
+document.getElementById('tin-nhan').addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); guiDon(); }
+});
+
+// ============================================================
+//  RENDER DANH SÁCH
+// ============================================================
+function renderDonList(data){
+  var el = document.getElementById('don-list');
+  var keys = Object.keys(data).sort(function(a,b){ return Number(b)-Number(a); });
+
+  // Phát thông báo nếu có đơn mới chưa done
+  keys.forEach(function(k){
+    if(!prevKeys[k] && data[k] && !data[k].done){
+      showPopup(data[k].msg);
+      docLoa(data[k].msg);
+    }
+  });
+  prevKeys = {};
+  keys.forEach(function(k){ prevKeys[k] = true; });
+
+  // Thống kê
+  var tong = keys.length, cho = 0, xong = 0;
+  keys.forEach(function(k){ if(data[k].done) xong++; else cho++; });
+  document.getElementById('st-tong').textContent = tong;
+  document.getElementById('st-cho').textContent = cho;
+  document.getElementById('st-xong').textContent = xong;
+
+  // Lọc
+  var filtered = keys.filter(function(k){
+    var d = data[k];
+    if(filterMode === 'wait' && d.done) return false;
+    if(filterMode === 'done' && !d.done) return false;
+    if(searchText){
+      var q = searchText.toLowerCase();
+      if(!d.msg.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('count-label').textContent =
+    filtered.length > 0 ? filtered.length + ' đơn' : '';
+
+  if(!filtered.length){
+    var emptyMsg = searchText ? 'Không tìm thấy đơn nào' : 'Chưa có đơn nào hôm nay';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div>'+emptyMsg+'</div></div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(function(k, i){
+    var d = data[k];
+    var num = keys.indexOf(k) + 1;   // số thứ tự theo toàn bộ
+    return '<div class="don-item'+(d.done?' done':'')+'" id="don-'+k+'">'
+      +'<div class="don-header">'
+      +'<div class="don-num">#'+num+'</div>'
+      +'<div class="don-time">⏰ '+d.time+'</div>'
+      +'</div>'
+      +'<div class="don-content">'+escHtml(d.msg)+'</div>'
+      +'<div class="don-footer">'
+      +(d.done
+        ?'<span class="badge-done">✅ Đã giao</span>'
+         +'<button class="btn-undo" onclick="undoDone(\''+k+'\')">↩ Hoàn tác</button>'
+        :'<button class="btn-done" onclick="danhDauXong(\''+k+'\')">✅ Đã giao</button>'
+         +'<span class="badge-wait">⏳ Chờ giao</span>')
+      +'<button class="btn-del" onclick="xoaDon(\''+k+'\',this)">🗑</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ============================================================
+//  HÀNH ĐỘNG ĐƠN
+// ============================================================
+function danhDauXong(k){
+  donRef.child(k).update({done:true});
+  showToast('✅ Đã đánh dấu giao xong!');
+}
+function undoDone(k){
+  donRef.child(k).update({done:false});
+  showToast('↩ Đã hoàn tác');
+}
+function xoaDon(k, btn){
+  if(btn) btn.textContent = '...';
+  donRef.child(k).remove().then(function(){
+    showToast('🗑 Đã xóa đơn');
+  });
+}
+function xoaHet(){
+  if(!confirm('Xóa toàn bộ đơn hôm nay?\n\nHành động này không thể hoàn tác!')) return;
+  donRef.remove().then(function(){
+    showToast('🗑 Đã xóa tất cả đơn hôm nay');
+  });
+}
+
+// ============================================================
+//  FILTER & SEARCH
+// ============================================================
+function setFilter(mode, btn){
+  filterMode = mode;
+  document.querySelectorAll('.btn-filter').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  donRef.once('value', function(snap){ renderDonList(snap.val()||{}); });
+}
+function toggleSearch(){
+  var bar = document.getElementById('search-bar');
+  bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+  if(bar.style.display === 'block') document.getElementById('search-inp').focus();
+  else { searchText=''; document.getElementById('search-inp').value=''; applyFilter(); }
+}
+function applyFilter(){
+  searchText = document.getElementById('search-inp').value.trim();
+  donRef.once('value', function(snap){ renderDonList(snap.val()||{}); });
+}
+
+// ============================================================
+//  ÂM THANH & THÔNG BÁO
+// ============================================================
+function docLoa(msg){
+  if(!soundOn) return;
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance('Có đơn mới. ' + msg);
+  u.lang = 'vi-VN';
+  u.rate = 0.9;
+  u.pitch = 1.05;
+  // Đợi voices load (cần cho mobile)
+  var trySpeak = function(){
+    var voices = window.speechSynthesis.getVoices();
+    var viVoice = voices.find(function(v){ return v.lang.startsWith('vi'); });
+    if(viVoice) u.voice = viVoice;
+    window.speechSynthesis.speak(u);
+  };
+  if(window.speechSynthesis.getVoices().length > 0) trySpeak();
+  else window.speechSynthesis.addEventListener('voiceschanged', trySpeak, {once:true});
+}
+
+function toggleSound(){
+  soundOn = !soundOn;
+  var btn = document.getElementById('btn-sound');
+  if(soundOn){
+    btn.textContent = '🔊 Tiếng: BẬT';
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '🔇 Tiếng: TẮT';
+    btn.classList.remove('active');
+  }
+}
+
+function testSound(){
+  showPopup('Cô Thành lấy 7 bao, giao lúc 9h sáng');
+  docLoa('Test thông báo. Cô Thành lấy 7 bao, giao lúc 9 giờ sáng.');
+}
+
+// POPUP
+function showPopup(msg){
+  var pop = document.getElementById('popup');
+  var fill = document.getElementById('popup-fill');
+  document.getElementById('popup-msg').textContent = msg;
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+  pop.classList.add('show');
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      fill.style.transition = 'width 3.5s linear';
+      fill.style.width = '0%';
+    });
+  });
+  clearTimeout(popTimer);
+  popTimer = setTimeout(function(){ pop.classList.remove('show'); }, 4500);
+}
+
+// TOAST
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+// ============================================================
+//  HELPER
+// ============================================================
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// Giữ màn hình sáng trên điện thoại (nếu hỗ trợ)
+if('wakeLock' in navigator){
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible'){
+      navigator.wakeLock.request('screen').catch(function(){});
+    }
+  });
+}
+</script>
+</body>
+</html>
